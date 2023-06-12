@@ -1,0 +1,52 @@
+generator client {
+  provider = "prisma-client-js"
+  previewFeatures = ["clientExtensions"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model reservation {
+  id               String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  date             DateTime   @db.Date
+  time             DateTime   @db.Time(6)
+  number_of_guests Int
+  customer_id      String     @db.Uuid
+  restaurant_id    String     @db.Uuid
+  created_at       DateTime   @default(now()) @db.Timestamp(6)
+  updated_at       DateTime   @default(now()) @db.Timestamp(6)
+  user             user       @relation(fields: [customer_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  restaurant       restaurant @relation(fields: [restaurant_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model restaurant {
+  id           String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name         String        @db.VarChar(255)
+  address      String        @db.VarChar(255)
+  phone_number String        @db.VarChar(255)
+  email        String        @db.VarChar(255)
+  cuisine_type String        @db.VarChar(255)
+  description  String?       @db.VarChar(255)
+  image        String?       @db.VarChar(255)
+  created_at   DateTime      @default(now()) @db.Timestamp(6)
+  updated_at   DateTime      @default(now()) @db.Timestamp(6)
+  user_id      String        @db.Uuid
+  tenant_id    String        @db.VarChar(255)
+  reservation  reservation[]
+  user         user          @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model user {
+  id          String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  email       String        @unique @db.VarChar(255)
+  firstName   String?       @db.VarChar(255)
+  lastName    String?       @db.VarChar(255)
+  roq_user_id String        @db.VarChar(255)
+  tenant_id   String        @db.VarChar(255)
+  created_at  DateTime      @default(now()) @db.Timestamp(6)
+  updated_at  DateTime      @default(now()) @db.Timestamp(6)
+  reservation reservation[]
+  restaurant  restaurant[]
+}
